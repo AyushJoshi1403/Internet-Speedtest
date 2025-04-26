@@ -24,6 +24,26 @@ mongoose.connect(process.env.MONGO_URI, {
 io.on('connection', (socket) => {
   console.log('A user connected');
 
+  socket.on('startSpeedTest', () => {
+    console.log('Speed test started');
+
+    speedtest.getSpeed().then(downloadSpeed => {
+      // Simulate upload speed for demonstration purposes
+      const uploadSpeed = (downloadSpeed * 0.8).toFixed(2);
+
+      socket.emit('speedUpdate', {
+        download: downloadSpeed.toFixed(2),
+        upload: uploadSpeed,
+      });
+    }).catch(err => {
+      console.error('Speed test error:', err);
+      socket.emit('speedUpdate', {
+        download: null,
+        upload: null,
+      });
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log('A user disconnected');
   });
