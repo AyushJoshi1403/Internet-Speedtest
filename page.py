@@ -1,35 +1,66 @@
 from tkinter import *
+from tkinter import ttk
 import speedtest
+import threading
 
 def speedcheck():
-	sp = speedtest.Speedtest()
-	sp.get_servers()
-	down = str( round(sp.download()/(10**6),3))+" Mbps"
-	up = str( round(sp.upload()/(10**6),3))+" Mbps"
-	lab_down.config(text=down)
-	lab_up.config(text=up)
+    try:
+        # Update UI to show testing status
+        download_label.config(text="Testing...")
+        upload_label.config(text="Testing...")
 
-sp = Tk()
-sp.title(" Internet Speed Test ")
-sp.geometry("500x650")
-sp.config(bg="Blue")
+        # Perform speed test
+        tester = speedtest.Speedtest()
+        tester.get_servers()
+        download_speed = str(round(tester.download() / (10**6), 3)) + " Mbps"
+        upload_speed = str(round(tester.upload() / (10**6), 3)) + " Mbps"
 
-lab = Label(sp,text="Internet Speed Test", font=("Time New Roman",30,"bold"),bg="Yellow",fg="Black")
-lab.place(x=60,y=40,height=50,width=380)
+        # Update UI with results
+        download_label.config(text=download_speed)
+        upload_label.config(text=upload_speed)
+    except Exception as e:
+        # Handle errors and update UI
+        download_label.config(text="Error")
+        upload_label.config(text="Error")
+        print("Error during speed test:", e)
 
-lab = Label(sp,text="Download Speed", font=("Time New Roman",30,"bold"),bg="RED")
-lab.place(x=60,y=130,height=50,width=380)
+def start_speed_test():
+    # Run the speed test in a separate thread
+    threading.Thread(target=speedcheck).start()
 
-lab_down = Label(sp,text="00", font=("Time New Roman",30,"bold"))
-lab_down.place(x=60,y=200,height=50,width=380)
+# Initialize the main window
+app = Tk()
+app.title("Internet Speed Test")
+app.geometry("500x650")
+app.config(bg="#f0f0f0")
 
-lab = Label(sp,text="Upload Speed", font=("Time New Roman",30,"bold"),bg="RED")
-lab.place(x=60,y=290,height=50,width=380)
+# Title label
+title_label = Label(app, text="Internet Speed Test", font=("Helvetica", 24, "bold"), bg="#4CAF50", fg="white")
+title_label.pack(pady=20, fill=X)
 
-lab_up = Label(sp,text="00", font=("Time New Roman",30,"bold"))
-lab_up.place(x=60,y=360,height=50,width=380)
+# Download speed section
+download_frame = Frame(app, bg="white", bd=2, relief=SOLID)
+download_frame.pack(pady=20, padx=20, fill=X)
 
-button = Button(sp,text="Check Speed",font=("Time New Roman",30,"bold"),relief=RAISED,bg="Yellow",command=speedcheck)
-button.place(x=60,y=460,height=50,width=380)
+download_text_label = Label(download_frame, text="Download Speed", font=("Helvetica", 18, "bold"), bg="white", fg="#333")
+download_text_label.pack(pady=10)
 
-sp.mainloop()
+download_label = Label(download_frame, text="0 Mbps", font=("Helvetica", 16), bg="white", fg="#4CAF50")
+download_label.pack(pady=10)
+
+# Upload speed section
+upload_frame = Frame(app, bg="white", bd=2, relief=SOLID)
+upload_frame.pack(pady=20, padx=20, fill=X)
+
+upload_text_label = Label(upload_frame, text="Upload Speed", font=("Helvetica", 18, "bold"), bg="white", fg="#333")
+upload_text_label.pack(pady=10)
+
+upload_label = Label(upload_frame, text="0 Mbps", font=("Helvetica", 16), bg="white", fg="#4CAF50")
+upload_label.pack(pady=10)
+
+# Check speed button
+check_button = ttk.Button(app, text="Check Speed", command=start_speed_test)
+check_button.pack(pady=30)
+
+# Run the application
+app.mainloop()
